@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { userRouter } from './routers/userRouter'
 import dotenv from 'dotenv'
+import { postRouter } from './routers/postRouter'
 
 dotenv.config()
 
@@ -17,22 +18,4 @@ app.listen(process.env.PORT || 3003, () => {
 })
 
 app.use("/users", userRouter)
-app.use("/posts", userRouter)
-
-// app.get("/ping", async (req: Request, res: Response) => {
-//     try {
-//         res.status(200).send({ message: "Pong!" })
-//     } catch (error) {
-//         console.log(error)
-
-//         if (req.statusCode === 200) {
-//             res.status(500)
-//         }
-
-//         if (error instanceof Error) {
-//             res.send(error.message)
-//         } else {
-//             res.send("Erro inesperado")
-//         }
-//     }
-// })
+app.use("/posts", postRouter)

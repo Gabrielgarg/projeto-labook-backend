@@ -18,14 +18,22 @@ DROP TABLE users;
 
 CREATE TABLE posts (
     id text unique not null,
-    creator_id text unique not null,
+    creator_id text not null,
     content text not null,
     likes integer not null,
     dislikes integer not null,
-    created_at text not null,
-    update_at text not null,
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL,
+    update_at TEXT DEFAULT (DATETIME()) NOT NULL,
     foreign key (creator_id) references users(id)
 );
+
+
+INSERT INTO posts (id, creator_id, content, likes, dislikes)
+VALUES
+	('p001', 'u002', 'eai', 0, 0),
+	('p002', 'u001', 'eai123', 0, 0);
+
+DROP TABLE posts;
 
 CREATE TABLE likes_dislikes(
     user_id text not null,

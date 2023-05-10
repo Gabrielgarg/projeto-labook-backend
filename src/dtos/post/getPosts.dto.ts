@@ -6,7 +6,6 @@ export interface GetPostsInputDTO {
   token:string
 }
 
-// UserModel é a estrutura de User que será devolvida para o Front (sem password)
 export type GetPostsOutputDTO = PostModel[]
 
 export const GetPostsSchema = z.object({

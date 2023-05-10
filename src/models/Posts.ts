@@ -1,8 +1,3 @@
-// export enum POST_ROLES {
-//     NORMAL = "NORMAL",
-//     CREATOR = "CREATOR"
-//   }
-  
   export interface PostDB {
     id: string,
     creator_id: string,
@@ -13,7 +8,6 @@
     update_at: string
   }
   
-  // é o modelo de User que o front receberá (sem password e createdAt camelCase)
   export interface PostModel {
     id: string,
     creatorId: string,
@@ -24,7 +18,6 @@
     updateAt: string
   }
   
-  //So recebo esses dados para proteger os restantes dos dados do usuario
   export interface TokenPayloadPost {
     id: string,
     creator_id: string
@@ -96,7 +89,6 @@
           this.createdAt = value
       }
   
-      // para facilitar nossa vida, temos o método que gera um UserDB
       public toDBModel(): PostDB {
           return {
               id: this.id,
@@ -105,12 +97,10 @@
               likes: this.likes,
               dislikes: this.dislikes,
               update_at: this.updateAt,
-            // e quem comunica com o db, e passando como camel case
               created_at: this.createdAt
           }
       }
   
-      // para facilitar nossa vida, temos o método que gera um UserModel
       public toBusinessModel(): PostModel {
           return {
               id: this.id,

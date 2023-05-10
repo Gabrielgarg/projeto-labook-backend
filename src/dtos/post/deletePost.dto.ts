@@ -1,12 +1,10 @@
 import z from "zod"
-import { PostModel } from "../../models/Posts"
 
 export interface DeletePostsInputDTO {
   q: string,
   token:string
 }
 
-// UserModel é a estrutura de User que será devolvida para o Front (sem password)
 export interface DeletePostsOutputDTO {
     message: string
 }

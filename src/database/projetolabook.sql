@@ -38,10 +38,16 @@ DROP TABLE posts;
 CREATE TABLE likes_dislikes(
     user_id text not null,
     post_id text not null,
-    like integer not null,
+    like INTEGER not null,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (post_id) REFERENCES posts (id)
 );
+
+INSERT INTO likes_dislikes (user_id, post_id, like)
+VALUES
+	('u001', 'p001', 1);
+
+DROP TABLE likes_dislikes;
 
 SELECT * FROM users;
 SELECT * FROM posts;

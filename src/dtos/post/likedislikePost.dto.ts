@@ -7,8 +7,6 @@ export interface LikeDislikePostsInputDTO {
   token: string,
   id: string
 }
-
-// UserModel é a estrutura de User que será devolvida para o Front (sem password)
 export interface LikeDislikePostsOutputDTO {
     message: string
 }

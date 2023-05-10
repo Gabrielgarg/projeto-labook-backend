@@ -16,7 +16,6 @@ export class UserBusiness {
     private tokenManager: TokenManager,
     private hashManager: HashManager
   ) { }
-
   public getUsers = async (
     input: GetUsersInputDTO
   ): Promise<GetUsersOutputDTO> => {
@@ -58,11 +57,11 @@ export class UserBusiness {
     // const { id, name, email, password } = input
     const { name, email, password } = input
 
-    // const userDBExists = await this.userDatabase.findUserById(id)
+    const userDBExists = await this.userDatabase.findUserByEmail(email)
 
-    // if (userDBExists) {
-    //   throw new BadRequestError("'id' já existe")
-    // }
+    if (userDBExists) {
+      throw new BadRequestError("'email' já cadastrado")
+    }
 
     console.log(this)
     const id = this.idGenerator.generate()
@@ -110,9 +109,9 @@ export class UserBusiness {
       throw new NotFoundError("'email' não encontrado")
     }
 
-    // if (password !== userDB.password) {
-    //   throw new BadRequestError("'email' ou 'password' incorretos")
-    // }
+    if (password !== userDB.password) {
+      throw new BadRequestError("'email' ou 'password' incorretos")
+    }
 
     const isPasswordCorrect = await this.hashManager.compare(password, userDB.password)
 

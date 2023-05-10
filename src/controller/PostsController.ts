@@ -1,10 +1,6 @@
 import { Request, Response } from "express"
-import { UserBusiness } from "../business/UserBusiness"
-import { GetUsersSchema } from "../dtos/user/getUsers.dto"
 import { ZodError } from "zod"
 import { BaseError } from "../errors/BaseError"
-import { LoginSchema } from "../dtos/user/login.dto"
-import { SignupSchema } from "../dtos/user/signup.dto"
 import { PostBusiness } from "../business/PostsBusiness"
 import { CreatePostsSchema } from "../dtos/post/createPost.dto"
 import { GetPostsSchema } from "../dtos/post/getPosts.dto"
@@ -16,15 +12,12 @@ export class PostController {
   constructor(
     private postBusiness: PostBusiness
   ) { }
-
   public getPosts = async (req: Request, res: Response) => {
     try {
       const input = GetPostsSchema.parse({
         q: req.query.q,
         token: req.headers.authorization
       })
-
-      console.log("to aqui")
 
       const output = await this.postBusiness.getPosts(input)
 
@@ -51,7 +44,6 @@ export class PostController {
       })
 
     
-      console.log("to aqui")
 
       const output = await this.postBusiness.createPost(input)
 
@@ -119,8 +111,8 @@ export class PostController {
       const input = LikeDislikePostsSchema.parse({
         like: req.body.like,
         dislike: req.body.dislike,
-        token: req.headers.authorization,
-        id: req.body.id as string
+        token: req.headers.authorization,//token do usuario
+        id: req.query.id//id do post
       })
 
       const output = await this.postBusiness.likedislikePost(input)

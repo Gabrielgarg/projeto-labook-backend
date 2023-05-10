@@ -1,13 +1,10 @@
 import z from "zod"
-import { PostModel } from "../../models/Posts"
 
 export interface EditPostsInputDTO {
     content: string,
     token:string
 }
 
-// UserModel é a estrutura de User que será devolvida para o Front (sem password)
-// export type CreatePostsOutputDTO = PostModel[]
 
 export interface EditPostsOutputDTO {
   message: string

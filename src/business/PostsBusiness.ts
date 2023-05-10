@@ -5,14 +5,10 @@ import { DeletePostsInputDTO, DeletePostsOutputDTO } from "../dtos/post/deletePo
 import { EditPostsInputDTO, EditPostsOutputDTO } from "../dtos/post/editPost.dto"
 import { GetPostsInputDTO, GetPostsOutputDTO } from "../dtos/post/getPosts.dto"
 import { LikeDislikePostsInputDTO, LikeDislikePostsOutputDTO } from "../dtos/post/likedislikePost.dto"
-import { GetUsersInputDTO, GetUsersOutputDTO } from "../dtos/user/getUsers.dto"
-import { LoginInputDTO, LoginOutputDTO } from "../dtos/user/login.dto"
-import { SignupInputDTO, SignupOutputDTO } from "../dtos/user/signup.dto"
 import { BadRequestError } from "../errors/BadRequestError"
 import { NotFoundError } from "../errors/NotFoundError"
+import { Like} from "../models/LikeDislike"
 import { Post, PostDB, TokenPayloadPost } from "../models/Posts"
-import { TokenPayload, USER_ROLES, User } from "../models/User"
-import { HashManager } from "../services/HashManager"
 import { IdGenerator } from "../services/IdGenerator"
 import { TokenManager } from "../services/TokenManager"
 
@@ -21,14 +17,12 @@ export class PostBusiness {
     private userDatabase: UserDatabase,
     private postDatabase: PostDatabase,
     private idGenerator: IdGenerator,
-    private tokenManager: TokenManager,
-    private hashManager: HashManager
+    private tokenManager: TokenManager
   ) { }
 
   public getPosts = async (
     input: GetPostsInputDTO
   ): Promise<GetPostsOutputDTO> => {
-    console.log("to aqui2")
     const { q, token } = input
 
     const payload = this.tokenManager.getPayload(token)
@@ -65,7 +59,7 @@ export class PostBusiness {
   public createPost = async (
     input: CreatePostsInputDTO
   ): Promise<CreatePostsOutputDTO> => {
-    // const { id, name, email, password } = input
+    //token do usuario
     const { content, token } = input
 
     const payload = this.tokenManager.getPayloadPost(token)
@@ -74,7 +68,6 @@ export class PostBusiness {
         throw new BadRequestError("Token inválido")
       }
   
-      console.log("id do usuario",payload.id)
 
     let likes = 0
     let dislikes = 0
@@ -171,36 +164,32 @@ export class PostBusiness {
   ): Promise<DeletePostsOutputDTO> => {
     const { q, token } = input
 
-    const output = {
-        message: "Post apagado com sucesso",
-    }
-
     const payload = this.tokenManager.getPayloadPost(token)
     
     if(payload === null){
         throw new BadRequestError("Token inválido")
     }
 
-    const userDB = await this.userDatabase.findUserById(payload.creator_id)
-
-    if(userDB?.role === "ADMIN"){
+    const userDB = await this.userDatabase.findUserById(q)
+    
+    const postDB = await this.postDatabase.findPostById(payload.id)
+    
+    if (!postDB) {
+      throw new NotFoundError("'post' não encontrado")
+    }
+    
+    if(userDB?.role === "ADMIN" || userDB?.id === payload.creator_id){
+      const output = {
+        message: "Post apagado com sucesso",
+    }
         await this.postDatabase.deletePost(payload.id)
 
         return output
     }
-
-    const postDB = await this.postDatabase.findPostById(payload.id)
-
-    if (!postDB) {
-        throw new NotFoundError("'post' não encontrado")
-      }
-    
-    if(payload.creator_id !== postDB.creator_id){
-        throw new NotFoundError("criador do post inválido")
+    else{
+      throw new NotFoundError("Você não pode apagar esse post")
     }
-      await this.postDatabase.deletePost(payload.id)
 
-    return output
   }
   public likedislikePost = async (
     input: LikeDislikePostsInputDTO
@@ -223,37 +212,91 @@ export class PostBusiness {
         throw new BadRequestError("O criador não pode dar like ou dislike")
     }
 
-    postDB.likes = postDB.likes + 1
-
     if(like){
-        const post = new Post(
-            postDB.id,
-            postDB.creator_id,
-            postDB.content,
-            postDB.likes,
-            postDB.dislikes,
-            postDB.created_at,
-            postDB.update_at
-          )
-    
-          const updatedPostDB: PostDB = {
-            id: post.getId() || postDB.id,
-            creator_id: post.getCreator() || postDB.creator_id,
-            content: post.getContent() || postDB.content,
-            likes:  postDB.likes || post.getLikes(),
-            dislikes: post.getDislike() || postDB.dislikes,
-            created_at: post.getCreatedAt() || postDB.created_at,
-            update_at: post.getUpdateAt() || postDB.update_at
-          }
 
-    const output = {
-        message: "Like efetuado com sucesso!",
+      console.log("to no like")
+
+      
+      const jadeulike = await this.postDatabase.likedislikebyid(payload.id, postDB.id)
+      
+      if(jadeulike?.like === 1){
+        throw new NotFoundError("Já deu like no post")
       }
+      const contadordolikedotabelalikedislike = 1
 
-      await this.postDatabase.like(postDB.id, updatedPostDB)
+        // await this.postDatabase.likedislike()
+        const newLikeDislike = new Like(
+          payload.id,
+          postDB.id,
+          contadordolikedotabelalikedislike
+        )
 
-    return output
+        //////////->>> Parei aqui
+        // const newLikeDB = newLikeDislike.liketoDBModel
+        // await this.postDatabase.insertlikedislike(newLikeDB)
+
+        postDB.likes = postDB.likes + 1
+          const post = new Post(
+              postDB.id,
+              postDB.creator_id,
+              postDB.content,
+              postDB.likes,
+              postDB.dislikes,
+              postDB.created_at,
+              postDB.update_at
+            )
+      
+            const updatedPostDB: PostDB = {
+              id: post.getId() || postDB.id,
+              creator_id: post.getCreator() || postDB.creator_id,
+              content: post.getContent() || postDB.content,
+              likes:  postDB.likes || post.getLikes(),
+              dislikes: post.getDislike() || postDB.dislikes,
+              created_at: post.getCreatedAt() || postDB.created_at,
+              update_at: post.getUpdateAt() || postDB.update_at
+            }
+  
+      const output = {
+          message: "Like efetuado com sucesso!",
+        }
+  
+        await this.postDatabase.like(postDB.id, updatedPostDB)
+  
+      return output
+
     }
+    if(dislike){
+
+      console.log("to no dislike")
+      postDB.likes = postDB.likes - 1
+      const post = new Post(
+          postDB.id,
+          postDB.creator_id,
+          postDB.content,
+          postDB.likes,
+          postDB.dislikes,
+          postDB.created_at,
+          postDB.update_at
+        )
+  
+        const updatedPostDB: PostDB = {
+          id: post.getId() || postDB.id,
+          creator_id: post.getCreator() || postDB.creator_id,
+          content: post.getContent() || postDB.content,
+          likes:  postDB.likes || post.getLikes(),
+          dislikes: post.getDislike() || postDB.dislikes,
+          created_at: post.getCreatedAt() || postDB.created_at,
+          update_at: post.getUpdateAt() || postDB.update_at
+        }
+
+  const output = {
+      message: "Dislike efetuado com sucesso!",
+    }
+
+    await this.postDatabase.dislike(postDB.id, updatedPostDB)
+
+  return output
+  }
 
     else{
         throw new BadRequestError("Entradas inválidas.")
